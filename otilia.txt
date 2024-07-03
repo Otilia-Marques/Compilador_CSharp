@@ -1,0 +1,39 @@
+using System;
+
+class Program
+{
+    static void Main()
+    {
+        Console.WriteLine("Digite três números para calcular a média:");
+
+        // Leitura dos três números
+        double num1 = LerNumero();
+        double num2 = LerNumero();
+        double num3 = LerNumero();
+
+        // Cálculo da média
+        double media = CalcularMedia(num1, num2, num3);
+
+        // Exibição do resultado
+        Console.WriteLine("A média dos números é: {media}");
+    }
+
+    // Método para ler um número do usuário
+    static double LerNumero()
+    {
+        double num;
+        do
+        {
+            Console.Write("Digite um número: ");
+        } while (!double.TryParse(Console.ReadLine(), out num)); // Repete a leitura até que o usuário digite um número válido
+        return num;
+    }
+
+    // Método para calcular a média de três números
+    static double CalcularMedia(double num1, double num2, double num3)
+    {
+        return (num1 + num2 + num3) / 3.5;
+    }
+
+    /* otilia */
+}
