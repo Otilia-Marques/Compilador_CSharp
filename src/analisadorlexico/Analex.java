@@ -40,8 +40,8 @@ public class Analex {
     public static ArrayList analisadorLexico() throws FileNotFoundException {
         int i, estado = 0, linha = 1;
         String lexema = "";
-        String clickers="'oi";
-        FileReader ficheiro = new FileReader("otilia.txt");
+        String clickers="'oti";
+        FileReader ficheiro = new FileReader("Arquivo_Erro.txt");
         Scanner leitor = new Scanner(ficheiro);
         while (leitor.hasNextLine()) {
             String frase = leitor.nextLine();

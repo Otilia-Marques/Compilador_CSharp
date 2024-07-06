@@ -16,18 +16,7 @@ public class Anasin {
     public static String tipoDados = "", op = "";
     public static boolean loop = false, Classe = false, Final = false, Static = false; 
     public static boolean Public = false, Private = false, If = false, doWhile = false;
-    public static final String RESET = "\033[0m";  // Text Reset
     
-    // Regular Colors
-    public static final String BLACK = "\033[0;30m";   // BLACK
-    public static final String RED = "\033[0;31m";     // RED
-    public static final String GREEN = "\033[0;32m";   // GREEN
-    public static final String YELLOW = "\033[0;33m";  // YELLOW
-    public static final String BLUE = "\033[0;34m";    // BLUE
-    public static final String PURPLE = "\033[0;35m";  // PURPLE
-    public static final String CYAN = "\033[0;36m";    // CYAN
-    public static final String WHITE = "\033[0;37m";   // WHITE
-
     public static ArrayList<Sintaxe> tabelaSintatica = new ArrayList();
     public static ArrayList<Sintaxe> tabelaAuxiliar = new ArrayList();
     public static ArrayList<String> caminhos = new ArrayList();
@@ -40,7 +29,7 @@ public class Anasin {
         return tabelaSintatica;
     }
 
-    public static void redirecione(ArrayList<Token> arraylist) {
+    public static void redirecionaEscopo(ArrayList<Token> arraylist) {
         if (caminhos.get(controlaEscopo).equals("funcao")) {
             corpoFuncao(arraylist);
         } else if (caminhos.get(controlaEscopo).equals("for")) {
@@ -56,37 +45,145 @@ public class Anasin {
         }
     }
 
+    // Regular Colors
+    public static final String RESET = "\033[0m";  // Text Reset
+    public static final String RED = "\033[0;31m";     // RED
+    public static final String GREEN = "\033[0;32m";   // GREEN
+
     public static void inicio(ArrayList<Token> arraylist) {
         caminhos.add("funcao");
-        Package(arraylist);
+        Program(arraylist);
     }
 
     public static void Fim(ArrayList<Token> arraylist) {
         //verificacoesFinais(arraylist);
         System.out.println(RED + "NÚMERO DE ERROS: " + numeroErros + RESET);
     }
+    
+    public static boolean abreParenteses(ArrayList<Token> arraylist) {
+        if (compararPalavra(arraylist, "(")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-    public static void Package(ArrayList<Token> arraylist) {
-        if (bounds(arraylist)) {
+    public static boolean fechaParenteses(ArrayList<Token> arraylist) {
+        if (compararPalavra(arraylist, ")")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static boolean abreParentesesRetos(ArrayList<Token> arraylist) {
+        if (compararPalavra(arraylist, "[")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static boolean fechaParentesesRetos(ArrayList<Token> arraylist) {
+        if (compararPalavra(arraylist, "]")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static boolean abreChaveta(ArrayList<Token> arraylist) {
+        if (compararPalavra(arraylist, "{")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static boolean fechaChaveta(ArrayList<Token> arraylist) {
+        if (compararPalavra(arraylist, "}")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static boolean limites(ArrayList<Token> arraylist) {
+        if (i < arraylist.size()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static boolean ID(ArrayList<Token> arraylist) {
+        if (arraylist.get(i).tipo.equals("IDENTIFICADOR")) {
+            i++;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static boolean ponto(ArrayList<Token> arraylist) {
+        if (arraylist.get(i).lexema.equals(".")) {
+            i++;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static boolean pontoEvirgula(ArrayList<Token> arraylist) {
+        if (arraylist.get(i).lexema.equals(";")) {
+            i++;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static boolean compararPalavra(ArrayList<Token> arraylist, String palavra) {
+        if (arraylist.get(i).lexema.equals(palavra)) {
+            i++;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static boolean compararTipo(ArrayList<Token> arraylist, String palavra) {
+        if (arraylist.get(i).tipo.equals(palavra)) {
+            i++;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    
+    
+    public static void Program(ArrayList<Token> arraylist) {
+        if (limites(arraylist)) {
             if (compararTipo(arraylist, "COMENTÁRIO") || compararTipo(arraylist, "COMENTÁRIO SIMPLES")) {
-                Package(arraylist);
-            } else if (arraylist.get(i).lexema.equals("package")) {
+                Program(arraylist);
+            } else if (arraylist.get(i).lexema.equals("using")) {
                 i++;
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (ID(arraylist)) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             if (ponto(arraylist)) {
                                 loop = true;
-                                Package(arraylist);
+                                Program(arraylist);
                             } else if (pontoEvirgula(arraylist)) {
                                 //System.out.println(GREEN + "PACKAGE BEM DECLARADA");
                                 loop = false;
-                                if (bounds(arraylist)) {
-                                    if (arraylist.get(i).lexema.equals("import")) {
-                                        Import(arraylist);
+                                if (limites(arraylist)) {
+                                    if (arraylist.get(i).lexema.equals("namespace")) {
+                                        Using(arraylist);
                                     }
                                 } else {
-                                    System.out.println(RED + "ESPERAVA-SE UM IMPORT, DECLARAÇÃO DE UMA CLASSE OU INTERFACE APÓS A EXPRESSÃO: " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
+                                    System.out.println(RED + "ESPERAVA-SE UM NAMESPACE, DECLARAÇÃO DE UMA CLASSE OU INTERFACE APÓS A EXPRESSÃO: " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
                                     numeroErros++;
                                 }
                             }
@@ -100,21 +197,21 @@ public class Anasin {
                     numeroErros++;
                 }
             } else if (loop && ID(arraylist)) {
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (ponto(arraylist)) {
-                        Package(arraylist);
+                        Program(arraylist);
                     } else if (pontoEvirgula(arraylist)) {
                         ////System.out.println(GREEN + "PACKAGE BEM DECLARADA" + RESET);
                         loop = false;
-                        if (bounds(arraylist)) {
-                            if (arraylist.get(i).lexema.equals("import")) {
-                                Import(arraylist);
+                        if (limites(arraylist)) {
+                            if (arraylist.get(i).lexema.equals("namespace")) {
+                                Using(arraylist);
                             } else if (arraylist.get(i).lexema.equals("public")) {
                                 i++;
-                                if (bounds(arraylist)) {
+                                if (limites(arraylist)) {
                                     if (arraylist.get(i).lexema.equals("abstract")) {
                                         i++;
-                                        if (bounds(arraylist)) {
+                                        if (limites(arraylist)) {
                                             if (compararPalavra(arraylist, "class")) {
                                                 i--;
                                                 Class(arraylist);
@@ -144,7 +241,7 @@ public class Anasin {
                                 Class(arraylist);
                             } else if (arraylist.get(i).lexema.equals("abstract")) {
                                 i++;
-                                if (bounds(arraylist)) {
+                                if (limites(arraylist)) {
                                     if (compararPalavra(arraylist, "class")) {
                                         i--;
                                         Class(arraylist);
@@ -182,20 +279,20 @@ public class Anasin {
         }
     }
 
-    public static void Import(ArrayList<Token> arraylist) {
-        if (bounds(arraylist)) {
-            if (arraylist.get(i).lexema.equals("import")) {
+    public static void Using(ArrayList<Token> arraylist) {
+        if (limites(arraylist)) {
+            if (arraylist.get(i).lexema.equals("using")) {
                 i++;
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (ID(arraylist)) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             if (ponto(arraylist)) {
-                                if (bounds(arraylist)) {
+                                if (limites(arraylist)) {
                                     if (compararPalavra(arraylist, "*")) {
-                                        if (bounds(arraylist)) {
+                                        if (limites(arraylist)) {
                                             if (compararPalavra(arraylist, ";")) {
                                                 //System.out.println(GREEN+"IMPORT BEM DECLARADO"+RESET);
-                                                nextImport(arraylist);
+                                                nextUsing(arraylist);
                                             } else {
                                                 System.out.println(RED + "ESPERAVA-SE ; APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
                                                 numeroErros++;
@@ -208,7 +305,7 @@ public class Anasin {
                                     } else if (ID(arraylist)) {
                                         i--;
                                         loop = true;
-                                        Import(arraylist);
+                                        Using(arraylist);
                                     } else {
                                         System.out.println(RED + "ESPERAVA-SE DECLARAÇÃO DE UMA CLASSE OU INTERFACE APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
                                         numeroErros++;
@@ -222,7 +319,7 @@ public class Anasin {
                                 ////System.out.println(GREEN + "IMPORT BEM DECLARADO");
                                 loop = false;
                                 //aqui vamos testar algo
-                                nextImport(arraylist);
+                                nextUsing(arraylist);
                             }
                         } else {
                             System.out.println(RED + "ESPERAVA-SE UMA PONTUAÇÃO APÓS A EXPRESSÃO: " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -234,14 +331,14 @@ public class Anasin {
                     numeroErros++;
                 }
             } else if (loop && ID(arraylist)) {
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (ponto(arraylist)) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             if (compararPalavra(arraylist, "*")) {
-                                if (bounds(arraylist)) {
+                                if (limites(arraylist)) {
                                     if (compararPalavra(arraylist, ";")) {
                                         ////System.out.println(GREEN + "IMPORT BEM DECLARADO" + RESET);
-                                        nextImport(arraylist);
+                                        nextUsing(arraylist);
                                     } else {
                                         System.out.println(RED + "ESPERAVA-SE ; APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
                                         numeroErros++;
@@ -254,7 +351,7 @@ public class Anasin {
                             } else if (ID(arraylist)) {
                                 i--;
                                 loop = true;
-                                Import(arraylist);
+                                Using(arraylist);
                             } else {
                                 System.out.println(RED + "ESPERAVA-SE DECLARAÇÃO DE UMA CLASSE OU INTERFACE APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
                                 numeroErros++;
@@ -267,7 +364,7 @@ public class Anasin {
                     } else if (pontoEvirgula(arraylist)) {
                         ////System.out.println(GREEN + "IMPORT BEM DECLARADO");
                         loop = false;
-                        nextImport(arraylist);
+                        nextUsing(arraylist);
                     }
                 } else {
                     System.out.println(RED + "ESPERAVA-SE UMA PONTUAÇÃO APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -280,16 +377,16 @@ public class Anasin {
         }
     }
 
-    public static void nextImport(ArrayList<Token> arraylist) {
-        if (bounds(arraylist)) {
-            if (arraylist.get(i).lexema.equals("import")) {
-                Import(arraylist);
+    public static void nextUsing(ArrayList<Token> arraylist) {
+        if (limites(arraylist)) {
+            if (arraylist.get(i).lexema.equals("using")) {
+                Using(arraylist);
             } else if (arraylist.get(i).lexema.equals("public")) {
                 i++;
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (arraylist.get(i).lexema.equals("abstract")) {
                         i++;
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             if (compararPalavra(arraylist, "class")) {
                                 i--;
                                 Class(arraylist);
@@ -316,7 +413,7 @@ public class Anasin {
                 Class(arraylist);
             } else if (arraylist.get(i).lexema.equals("abstract")) {
                 i++;
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (compararPalavra(arraylist, "class")) {
                         i--;
                         Class(arraylist);
@@ -342,15 +439,15 @@ public class Anasin {
 
     public static void Class(ArrayList<Token> arraylist) {
         if (compararPalavra(arraylist, "class")) {
-            if (bounds(arraylist)) {
+            if (limites(arraylist)) {
                 if (ID(arraylist)) {
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         if (compararPalavra(arraylist, "extends")) {
-                            if (bounds(arraylist)) {
+                            if (limites(arraylist)) {
                                 if (ID(arraylist)) {
-                                    if (bounds(arraylist)) {
+                                    if (limites(arraylist)) {
                                         if (abreChaveta(arraylist)) {
-                                            if (bounds(arraylist)) {
+                                            if (limites(arraylist)) {
                                                 corpoClass(arraylist);
                                             } else {
                                                 System.out.println(RED + "ESPERAVA-SE POR } A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
@@ -374,11 +471,11 @@ public class Anasin {
                                 i++;
                             }
                         } else if (compararPalavra(arraylist, "implements")) {
-                            if (bounds(arraylist)) {
+                            if (limites(arraylist)) {
                                 if (ID(arraylist)) {
-                                    if (bounds(arraylist)) {
+                                    if (limites(arraylist)) {
                                         if (abreChaveta(arraylist)) {
-                                            if (bounds(arraylist)) {
+                                            if (limites(arraylist)) {
                                                 corpoClass(arraylist);
                                             } else {
                                                 System.out.println(RED + "ESPERAVA-SE POR } A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
@@ -402,7 +499,7 @@ public class Anasin {
                                 i++;
                             }
                         } else if (abreChaveta(arraylist)) {
-                            if (bounds(arraylist)) {
+                            if (limites(arraylist)) {
                                 corpoClass(arraylist);
                             } else {
                                 System.out.println(RED + "ESPERAVA-SE POR } A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
@@ -461,9 +558,9 @@ public class Anasin {
                 For(arraylist);
             } else if (compararPalavra(arraylist, "while")) {
                 If = false;
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (compararPalavra(arraylist, "(")) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             condicao(arraylist);
                         } else {
                             System.out.println(RED + "ESPERAVA-SE POR UMA EXPRESSÃO LÓGICA  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -478,9 +575,9 @@ public class Anasin {
                 }
             } else if (compararPalavra(arraylist, "if")) {
                 If = true;
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (compararPalavra(arraylist, "(")) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             condicao(arraylist);
                         } else {
                             System.out.println(RED + "ESPERAVA-SE POR UMA EXPRESSÃO LÓGICA  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -494,9 +591,9 @@ public class Anasin {
                     i++;
                 }
             } else if (compararPalavra(arraylist, "do")) {
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (compararPalavra(arraylist, "{")) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             corpoDoWhile(arraylist);
                         } else {
                             System.out.println(RED + "ESPERAVA-SE POR { APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -524,7 +621,7 @@ public class Anasin {
                     lexemaSintatico = i + 2;
                     i = i + 2;
 
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         operacoesSemanticas(arraylist, tipo);
                     } else {
                         System.out.println(RED + "ESPERAVA-SE ALGUM VALOR PARA O PARÂMETRO DA FUNÇAÕ OU )  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
@@ -539,10 +636,10 @@ public class Anasin {
                 if (verificarExistencia(arraylist.get(i).lexema)) {
                     lexemaSintatico = i + 2;
                     i = i + 2;
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         tabelaAuxiliar.clear();
-                        tabelaAuxiliar.add(new Sintax("TOK_IDENTIFICADOR", arraylist.get(i - 2).lexema, "-", "-", "-", 107));
-                        tabelaAuxiliar.add(new Sintax("TOK_ABRE_PARENTESES", arraylist.get(i - 1).lexema, "-", "-", "-", 107));
+                        tabelaAuxiliar.add(new Sintaxe("TOK_IDENTIFICADOR", arraylist.get(i - 2).lexema, "-", "-", "-", 107));
+                        tabelaAuxiliar.add(new Sintaxe("TOK_ABRE_PARENTESES", arraylist.get(i - 1).lexema, "-", "-", "-", 107));
                         chamadaFuncao(arraylist, arraylist.get(i - 2).lexema);
                     } else {
                         System.out.println(RED + "ESPERAVA-SE ALGUM VALOR PARA O PARÂMETRO DA FUNÇAÕ OU )  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
@@ -556,7 +653,7 @@ public class Anasin {
             } else if ((arraylist.get(i).tipo.equals("IDENTIFICADOR")) && (arraylist.get(i + 1).lexema.equals("["))) {
                 if (verificarExistencia(arraylist.get(i).lexema)) {
                     i = i + 2;
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
 
                     } else {
                         System.out.println(RED + "ESPERAVA-SE ALGUM VETOR OU MATRIZ APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
@@ -568,15 +665,11 @@ public class Anasin {
                     i++;
                 }
             } else if (fechaChaveta(arraylist)) {
-                //esse i++ é temporário
-                //i++;
-                //System.out.println("fechando na função: "+i);
-                //System.out.println("lexema atual antes de entrar novamente na classe: "+arraylist.get(i).lexema);
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (compararPalavra(arraylist, "while")) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             if (compararPalavra(arraylist, "(")) {
-                                if (bounds(arraylist)) {
+                                if (limites(arraylist)) {
                                     doWhile = true;
                                     condicao(arraylist);
                                 } else {
@@ -618,9 +711,9 @@ public class Anasin {
         } else if (compararPalavra(arraylist, "for")) {
             For(arraylist);
         } else if (compararPalavra(arraylist, "while")) {
-            if (bounds(arraylist)) {
+            if (limites(arraylist)) {
                 if (compararPalavra(arraylist, "(")) {
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         condicao(arraylist);
                     } else {
                         System.out.println(RED + "ESPERAVA-SE POR UMA EXPRESSÃO LÓGICA  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -634,9 +727,9 @@ public class Anasin {
                 i++;
             }
         } else if (compararPalavra(arraylist, "if")) {
-            if (bounds(arraylist)) {
+            if (limites(arraylist)) {
                 if (compararPalavra(arraylist, "(")) {
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         condicao(arraylist);
                     } else {
                         System.out.println(RED + "ESPERAVA-SE POR UMA EXPRESSÃO LÓGICA  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -662,7 +755,7 @@ public class Anasin {
 
     public static boolean verificarExistencia(String lexema) {
         boolean existencia = false;
-        for (Sintax sintax : tabelaSintatica) {
+        for (Sintaxe sintax : tabelaSintatica) {
             if (sintax.lexema.equals(lexema)) {
                 existencia = true;
                 if (sintax.escopo == controlaEscopo) {
@@ -682,7 +775,7 @@ public class Anasin {
     }
 
     public static void adicionarNaTabelaSintatica() {
-        for (Sintax auxiliar : tabelaAuxiliar) {
+        for (Sintaxe auxiliar : tabelaAuxiliar) {
             tabelaSintatica.add(auxiliar);
         }
 
@@ -696,20 +789,20 @@ public class Anasin {
             declaracoes(arraylist);
         } else if (compararPalavra(arraylist, "int") || compararPalavra(arraylist, "short") || compararPalavra(arraylist, "byte")) {
             lexema = "int";
-            sintax = new Sintax("TOK_PALAVRA_RESERVADA", "int", "-", "-", "-", controlaEscopo);
+            sintax = new Sintaxe("TOK_PALAVRA_RESERVADA", "int", "-", "-", "-", controlaEscopo);
             tabelaAuxiliar.add(sintax);
             tipoA = "NÚMERO INTEIRO";
-            if (bounds(arraylist)) {
+            if (limites(arraylist)) {
                 verificarExistencia(arraylist.get(i).lexema);
                 if (ID(arraylist)) {
                     lexemaSintatico = i - 1;
-                    if (bounds(arraylist)) {
-                        sintax = new Sintax("TOK_ID", arraylist.get(lexemaSintatico).lexema, "-", lexema, "-", controlaEscopo);
+                    if (limites(arraylist)) {
+                        sintax = new Sintaxe("TOK_ID", arraylist.get(lexemaSintatico).lexema, "-", lexema, "-", controlaEscopo);
                         if (compararPalavra(arraylist, "(") && Classe) {
                             tabelaAuxiliar.add(sintax);
-                            sintax = new Sintax("TOK_ABRE_PARENTESES", arraylist.get(i - 1).lexema, "-", "-", "-", 0);
+                            sintax = new Sintaxe("TOK_ABRE_PARENTESES", arraylist.get(i - 1).lexema, "-", "-", "-", 0);
                             tabelaAuxiliar.add(sintax);
-                            if (bounds(arraylist)) {
+                            if (limites(arraylist)) {
                                 parametro(arraylist);
                             } else {
                                 System.out.println(RED + "ESPERAVA-SE ( APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -725,7 +818,7 @@ public class Anasin {
                                 tabelaAuxiliar.add(sintax);
                                 ////System.out.println(GREEN + "SUCESSO, VARIÁVEL BEM DECLARADA" + RESET);
                                 adicionarNaTabelaSintatica();
-                                if (!bounds(arraylist)) {
+                                if (!limites(arraylist)) {
                                     System.out.println(RED + "ESPERAVA-SE }  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
                                     numeroErros++;
                                     i++;
@@ -735,16 +828,16 @@ public class Anasin {
                             tabelaAuxiliar.add(sintax);
                             declaracaoVariaveis(arraylist, "NÚMERO INTEIRO");
                         } else if (compararPalavra(arraylist, "=")) {
-                            if (bounds(arraylist)) {
+                            if (limites(arraylist)) {
                                 if (compararTipo(arraylist, "NÚMERO INTEIRO")) {
-                                    sintax = new Sintax("TOK_ID", arraylist.get(lexemaSintatico).lexema, arraylist.get(lexemaSintatico + 2).lexema, "int", "int", controlaEscopo);
-                                    if (bounds(arraylist)) {
+                                    sintax = new Sintaxe("TOK_ID", arraylist.get(lexemaSintatico).lexema, arraylist.get(lexemaSintatico + 2).lexema, "int", "int", controlaEscopo);
+                                    if (limites(arraylist)) {
                                         if (pontoEvirgula(arraylist)) {
                                             tabelaAuxiliar.add(sintax);
                                             adicionarNaTabelaSintatica();
                                             ////System.out.println(GREEN + "SUCESSO, VARIÁVEL BEM DECLARADA" + RESET);
                                         } else if (compararPalavra(arraylist, ",")) {
-                                            if (bounds(arraylist)) {
+                                            if (limites(arraylist)) {
                                                 tabelaAuxiliar.add(sintax);
                                                 declaracaoVariaveis(arraylist, "NÚMERO INTEIRO");
                                             } else {
@@ -770,16 +863,16 @@ public class Anasin {
                                 tabelaAuxiliar.clear();
                             }
                         } else if (compararPalavra(arraylist, "[")) {
-                            if (bounds(arraylist)) {
+                            if (limites(arraylist)) {
                                 if (fechaParentesesRetos(arraylist)) {
-                                    if (bounds(arraylist)) {
+                                    if (limites(arraylist)) {
                                         if (compararPalavra(arraylist, "[")) {
-                                            if (bounds(arraylist)) {
+                                            if (limites(arraylist)) {
                                                 if (fechaParentesesRetos(arraylist)) {
-                                                    if (bounds(arraylist)) {
+                                                    if (limites(arraylist)) {
                                                         if (compararPalavra(arraylist, ";")) {
                                                             ////System.out.println(GREEN + "SUCESSO, MATRIZ DECLARADA" + RESET);
-                                                            if (!bounds(arraylist)) {
+                                                            if (!limites(arraylist)) {
                                                                 System.out.println(RED + "ESPERAVA-SE }  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
                                                                 numeroErros++;
                                                                 i++;
@@ -787,7 +880,7 @@ public class Anasin {
                                                         } else if (compararPalavra(arraylist, ",")) {
                                                             declaracaoVariaveis(arraylist, tipoA);
                                                         } else if (compararPalavra(arraylist, "=")) {
-                                                            if (bounds(arraylist)) {
+                                                            if (limites(arraylist)) {
                                                                 matriz(arraylist, "int");
                                                             } else {
                                                                 System.out.println(RED + "ESPERAVA-SE NEW OU { APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -816,7 +909,7 @@ public class Anasin {
                                             }
                                         } else if (compararPalavra(arraylist, ";")) {
                                             ////System.out.println(GREEN + "SUCESSO, VETOR DECLARADO" + RESET);
-                                            if (!bounds(arraylist)) {
+                                            if (!limites(arraylist)) {
                                                 System.out.println(RED + "ESPERAVA-SE }  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
                                                 numeroErros++;
                                                 i++;
@@ -824,7 +917,7 @@ public class Anasin {
                                         } else if (compararPalavra(arraylist, ",")) {
                                             declaracaoVariaveis(arraylist, "NÚMERO INTEIRO");
                                         } else if (compararPalavra(arraylist, "=")) {
-                                            if (bounds(arraylist)) {
+                                            if (limites(arraylist)) {
                                                 vetor(arraylist, "NÚMERO INTEIRO");
                                             } else {
                                                 System.out.println(RED + "ESPERAVA-SE NEW OU { APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -863,14 +956,14 @@ public class Anasin {
                         i++;
                     }
                 } else if (compararPalavra(arraylist, "[")) {
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         if (fechaParentesesRetos(arraylist)) {
-                            if (bounds(arraylist)) {
+                            if (limites(arraylist)) {
                                 if (ID(arraylist)) {
-                                    if (bounds(arraylist)) {
+                                    if (limites(arraylist)) {
                                         if (compararPalavra(arraylist, ";")) {
                                             ////System.out.println(GREEN + "SUCESSO, VETOR DECLARADO" + RESET);
-                                            if (!bounds(arraylist)) {
+                                            if (!limites(arraylist)) {
                                                 System.out.println(RED + "ESPERAVA-SE }  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
                                                 numeroErros++;
                                                 i++;
@@ -878,7 +971,7 @@ public class Anasin {
                                         } else if (compararPalavra(arraylist, ",")) {
                                             declaracaoVariaveis(arraylist, "NÚMERO INTEIRO");
                                         } else if (compararPalavra(arraylist, "=")) {
-                                            if (bounds(arraylist)) {
+                                            if (limites(arraylist)) {
                                                 vetor(arraylist, "int");
                                             } else {
                                                 System.out.println(RED + "ESPERAVA-SE NEW OU { APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -897,14 +990,14 @@ public class Anasin {
                                     }
                                 }//aqui em baixo tem experimento 
                                 else if (compararPalavra(arraylist, "[")) {
-                                    if (bounds(arraylist)) {
+                                    if (limites(arraylist)) {
                                         if (fechaParentesesRetos(arraylist)) {
-                                            if (bounds(arraylist)) {
+                                            if (limites(arraylist)) {
                                                 if (ID(arraylist)) {
-                                                    if (bounds(arraylist)) {
+                                                    if (limites(arraylist)) {
                                                         if (compararPalavra(arraylist, ";")) {
                                                             ////System.out.println(GREEN + "SUCESSO, MATRIZ DECLARADA" + RESET);
-                                                            if (!bounds(arraylist)) {
+                                                            if (!limites(arraylist)) {
                                                                 System.out.println(RED + "ESPERAVA-SE }  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
                                                                 numeroErros++;
                                                                 i++;
@@ -912,7 +1005,7 @@ public class Anasin {
                                                         } else if (compararPalavra(arraylist, ",")) {
                                                             declaracaoVariaveis(arraylist, "NÚMERO INTEIRO");
                                                         } else if (compararPalavra(arraylist, "=")) {
-                                                            if (bounds(arraylist)) {
+                                                            if (limites(arraylist)) {
                                                                 matriz(arraylist, "int");
                                                             } else {
                                                                 System.out.println(RED + "ESPERAVA-SE NEW OU { APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -982,9 +1075,9 @@ public class Anasin {
             }
         } else if (compararPalavra(arraylist, "public")) {
             if (ID(arraylist)) {
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (compararPalavra(arraylist, "(")) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             construtor(arraylist);
                         } else {
                             System.out.println(RED + "ESPERAVA-SE ( APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -1002,7 +1095,7 @@ public class Anasin {
                     i++;
                 }
             } else if (compararPalavra(arraylist, "static")) {
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     declaracoes(arraylist);
                 } else {
                     System.out.println(RED + "ESPERAVA-SE UM TIPO DE DADOS OU TIPO DE RETORNO APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -1010,7 +1103,7 @@ public class Anasin {
                     i++;
                 }
             } else if (compararPalavra(arraylist, "final")) {
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     declaracoes(arraylist);
                 } else {
                     System.out.println(RED + "ESPERAVA-SE UM TIPO DE DADOS OU TIPO DE RETORNO APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -1020,7 +1113,7 @@ public class Anasin {
             } else if (compararPalavra(arraylist, "int") || compararPalavra(arraylist, "double") || compararPalavra(arraylist, "float") || compararPalavra(arraylist, "long") || compararPalavra(arraylist, "short")
                     || compararPalavra(arraylist, "byte") || compararPalavra(arraylist, "boolean")) {
                 i--;
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     declaracoes(arraylist);
                 } else {
                     System.out.println(RED + "ESPERAVA-SE UM TIPO DE DADOS OU TIPO DE RETORNO APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -1036,7 +1129,7 @@ public class Anasin {
                 i++;
             }
         } else if (compararPalavra(arraylist, "private")) {
-            if (bounds(arraylist)) {
+            if (limites(arraylist)) {
                 declaracoes(arraylist);
             } else {
                 System.out.println(RED + "ESPERAVA-SE UM TIPO DE DADOS, STATIC OU FINAL APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -1044,11 +1137,11 @@ public class Anasin {
                 i++;
             }
         } else if (compararPalavra(arraylist, "void")) {
-            if (bounds(arraylist)) {
+            if (limites(arraylist)) {
                 if (ID(arraylist)) {
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         if (abreParenteses(arraylist)) {
-                            if (bounds(arraylist)) {
+                            if (limites(arraylist)) {
                                 parametro(arraylist);
                             } else {
                                 System.out.println(RED + "ESPERAVA-SE ) OU VARIÁVEIS APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -1074,29 +1167,29 @@ public class Anasin {
         } else if (compararPalavra(arraylist, "String")) {
             tipoA = "STRING";
             tipoDados = "String";
-            sintax = new Sintax("TOK_IDENTIFICADOR", "String", "-", "-", "-", controlaEscopo);
+            sintax = new Sintaxe("TOK_IDENTIFICADOR", "String", "-", "-", "-", controlaEscopo);
             tabelaAuxiliar.add(sintax);
             declaracoesAux(arraylist, tipoA);
         } else if (compararPalavra(arraylist, "double")) {
-            sintax = new Sintax("TOK_PALAVRA_RESERVADA", "double", "-", "-", "-", controlaEscopo);
+            sintax = new Sintaxe("TOK_PALAVRA_RESERVADA", "double", "-", "-", "-", controlaEscopo);
             tipoA = "double";
             tipoDados = "double";
             tabelaAuxiliar.add(sintax);
             declaracoesAux(arraylist, tipoA);
         } else if (compararPalavra(arraylist, "boolean")) {
-            sintax = new Sintax("TOK_PALAVRA_RESERVADA", "boolean", "-", "-", "-", controlaEscopo);
+            sintax = new Sintaxe("TOK_PALAVRA_RESERVADA", "boolean", "-", "-", "-", controlaEscopo);
             tipoA = "PALAVRA RESERVADA";
             tipoDados = "boolean";
             tabelaAuxiliar.add(sintax);
             declaracoesAux(arraylist, tipoA);
         } else if (compararPalavra(arraylist, "long")) {
-            sintax = new Sintax("TOK_PALAVRA_RESERVADA", "long", "-", "-", "-", controlaEscopo);
+            sintax = new Sintaxe("TOK_PALAVRA_RESERVADA", "long", "-", "-", "-", controlaEscopo);
             tipoA = "NÚMERO INTEIRO";
             tipoDados = "long";
             tabelaAuxiliar.add(sintax);
             declaracoesAux(arraylist, tipoA);
         } else if (compararPalavra(arraylist, "float")) {
-            sintax = new Sintax("TOK_PALAVRA_RESERVADA", "float", "-", "-", "-", controlaEscopo);
+            sintax = new Sintaxe("TOK_PALAVRA_RESERVADA", "float", "-", "-", "-", controlaEscopo);
             tabelaAuxiliar.add(sintax);
             tipoA = "NÚMERO REAL";
             tipoDados = "float";
@@ -1124,13 +1217,13 @@ public class Anasin {
 
         if (pontoEvirgula(arraylist) || compararTipo(arraylist, "COMENTÁRIO") || compararTipo(arraylist, "COMENTÁRIO SIMPLES")) {
             i = i;
-        } else if (bounds(arraylist)) {
+        } else if (limites(arraylist)) {
             if (ID(arraylist)) {
                 lexemaSintatico = i - 1;
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (compararPalavra(arraylist, "(") && Classe) {
-                        sintax = new Sintax("TOK_ABRE_PARENTESES", arraylist.get(lexemaSintatico).lexema, "-", tipo, "-", controlaEscopo);
-                        if (bounds(arraylist)) {
+                        sintax = new Sintaxe("TOK_ABRE_PARENTESES", arraylist.get(lexemaSintatico).lexema, "-", tipo, "-", controlaEscopo);
+                        if (limites(arraylist)) {
                             parametro(arraylist);
                         } else {
                             System.out.println(RED + "ESPERAVA-SE ( APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -1138,28 +1231,28 @@ public class Anasin {
                             i++;
                         }
                     } else if (compararPalavra(arraylist, ";")) {
-                        sintax = new Sintax("TOK_ID", arraylist.get(lexemaSintatico).lexema, "-", tipoDados, "-", controlaEscopo);
+                        sintax = new Sintaxe("TOK_ID", arraylist.get(lexemaSintatico).lexema, "-", tipoDados, "-", controlaEscopo);
                         tabelaAuxiliar.add(sintax);
                         adicionarNaTabelaSintatica();
-                        if (!bounds(arraylist)) {
+                        if (!limites(arraylist)) {
                             System.out.println(RED + "ESPERAVA-SE }  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
                             numeroErros++;
                             i++;
                         }
                     } else if (compararPalavra(arraylist, ",")) {
-                        sintax = new Sintax("TOK_ID", arraylist.get(lexemaSintatico).lexema, "-", tipoDados, "-", controlaEscopo);
+                        sintax = new Sintaxe("TOK_ID", arraylist.get(lexemaSintatico).lexema, "-", tipoDados, "-", controlaEscopo);
                         tabelaAuxiliar.add(sintax);
                         declaracaoVariaveis(arraylist, tipo);
                     } else if (compararPalavra(arraylist, "=")) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             if (compararTipo(arraylist, tipo)) {
-                                if (bounds(arraylist)) {
+                                if (limites(arraylist)) {
                                     if (tipoDados.equals("float")) {
-                                        if (bounds(arraylist)) {
+                                        if (limites(arraylist)) {
                                             if (compararPalavra(arraylist, "f")) {
-                                                if (bounds(arraylist)) {
+                                                if (limites(arraylist)) {
                                                     if (compararPalavra(arraylist, ",")) {
-                                                        sintax = new Sintax("TOK_ID", arraylist.get(lexemaSintatico).lexema, arraylist.get(i - 3).lexema, "float", "-", controlaEscopo);
+                                                        sintax = new Sintaxe("TOK_ID", arraylist.get(lexemaSintatico).lexema, arraylist.get(i - 3).lexema, "float", "-", controlaEscopo);
                                                         tabelaAuxiliar.add(sintax);
                                                         declaracaoVariaveis(arraylist, tipo);
                                                     } else if (compararPalavra(arraylist, ";")) {
@@ -1182,16 +1275,16 @@ public class Anasin {
                                             numeroErros++;
                                         }
                                     } else if (lexema.equals("long")) {
-                                        if (bounds(arraylist)) {
+                                        if (limites(arraylist)) {
                                             if (compararPalavra(arraylist, "L")) {
                                                 System.out.println("chega aqui");
-                                                if (bounds(arraylist)) {
+                                                if (limites(arraylist)) {
                                                     if (compararPalavra(arraylist, ",")) {
-                                                        sintax = new Sintax("TOK_ID", arraylist.get(lexemaSintatico).lexema, arraylist.get(i - 3).lexema, tipoDados, "-", controlaEscopo);
+                                                        sintax = new Sintaxe("TOK_ID", arraylist.get(lexemaSintatico).lexema, arraylist.get(i - 3).lexema, tipoDados, "-", controlaEscopo);
                                                         tabelaAuxiliar.add(sintax);
                                                         declaracaoVariaveis(arraylist, tipo);
                                                     } else if (compararPalavra(arraylist, ";")) {
-                                                        sintax = new Sintax("TOK_ID", arraylist.get(lexemaSintatico).lexema, arraylist.get(i - 3).lexema, tipoDados, "-", controlaEscopo);
+                                                        sintax = new Sintaxe("TOK_ID", arraylist.get(lexemaSintatico).lexema, arraylist.get(i - 3).lexema, tipoDados, "-", controlaEscopo);
                                                         tabelaAuxiliar.add(sintax);
                                                         adicionarNaTabelaSintatica();
                                                         ////System.out.println(GREEN + "SUCESSO, LONG BEM DECLARADO" + RESET);
@@ -1215,14 +1308,14 @@ public class Anasin {
                                             numeroErros++;
                                         }
                                     } else if (pontoEvirgula(arraylist)) {
-                                        sintax = new Sintax("TOK_ID", arraylist.get(lexemaSintatico).lexema, "-", tipoDados, "-", controlaEscopo);
+                                        sintax = new Sintaxe("TOK_ID", arraylist.get(lexemaSintatico).lexema, "-", tipoDados, "-", controlaEscopo);
                                         tabelaAuxiliar.add(sintax);
                                         adicionarNaTabelaSintatica();
                                         ////System.out.println(GREEN + "SUCESSO, VARIÁVEL BEM DECLARADA" + RESET);
                                     } else if (compararPalavra(arraylist, ",")) {
-                                        sintax = new Sintax("TOK_ID", arraylist.get(lexemaSintatico).lexema, "-", tipoDados, "-", controlaEscopo);
+                                        sintax = new Sintaxe("TOK_ID", arraylist.get(lexemaSintatico).lexema, "-", tipoDados, "-", controlaEscopo);
                                         tabelaAuxiliar.add(sintax);
-                                        if (bounds(arraylist)) {
+                                        if (limites(arraylist)) {
                                             declaracaoVariaveis(arraylist, tipo);
                                         } else {
                                             System.out.println(RED + "ESPERAVA-SE UM IDENTIFICADOR APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -1244,16 +1337,16 @@ public class Anasin {
                             numeroErros++;
                         }
                     } else if (compararPalavra(arraylist, "[")) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             if (fechaParentesesRetos(arraylist)) {
-                                if (bounds(arraylist)) {
+                                if (limites(arraylist)) {
                                     if (compararPalavra(arraylist, "[")) {
-                                        if (bounds(arraylist)) {
+                                        if (limites(arraylist)) {
                                             if (fechaParentesesRetos(arraylist)) {
-                                                if (bounds(arraylist)) {
+                                                if (limites(arraylist)) {
                                                     if (compararPalavra(arraylist, ";")) {
                                                         ////System.out.println(GREEN + "SUCESSO, MATRIZ DECLARADA" + RESET);
-                                                        if (!bounds(arraylist)) {
+                                                        if (!limites(arraylist)) {
                                                             System.out.println(RED + "ESPERAVA-SE }  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
                                                             numeroErros++;
                                                             i++;
@@ -1261,7 +1354,7 @@ public class Anasin {
                                                     } else if (compararPalavra(arraylist, ",")) {
                                                         declaracaoVariaveis(arraylist, tipo);
                                                     } else if (compararPalavra(arraylist, "=")) {
-                                                        if (bounds(arraylist)) {
+                                                        if (limites(arraylist)) {
                                                             matriz(arraylist, lexema);
                                                         } else {
                                                             System.out.println(RED + "ESPERAVA-SE NEW OU { APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -1290,7 +1383,7 @@ public class Anasin {
                                         }
                                     } else if (compararPalavra(arraylist, ";")) {
                                         ////System.out.println(GREEN + "SUCESSO, VETOR DECLARADO" + RESET);
-                                        if (!bounds(arraylist)) {
+                                        if (!limites(arraylist)) {
                                             System.out.println(RED + "ESPERAVA-SE }  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
                                             numeroErros++;
                                             i++;
@@ -1298,7 +1391,7 @@ public class Anasin {
                                     } else if (compararPalavra(arraylist, ",")) {
                                         declaracaoVariaveis(arraylist, tipo);
                                     } else if (compararPalavra(arraylist, "=")) {
-                                        if (bounds(arraylist)) {
+                                        if (limites(arraylist)) {
                                             vetor(arraylist, lexema);
                                         } else {
                                             System.out.println(RED + "ESPERAVA-SE NEW OU { APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -1337,14 +1430,14 @@ public class Anasin {
                     i++;
                 }
             } else if (compararPalavra(arraylist, "[")) {
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (fechaParentesesRetos(arraylist)) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             if (ID(arraylist)) {
-                                if (bounds(arraylist)) {
+                                if (limites(arraylist)) {
                                     if (compararPalavra(arraylist, ";")) {
                                         ////System.out.println(GREEN + "SUCESSO, VETOR DECLARADO" + RESET);
-                                        if (!bounds(arraylist)) {
+                                        if (!limites(arraylist)) {
                                             System.out.println(RED + "ESPERAVA-SE }  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
                                             numeroErros++;
                                             i++;
@@ -1352,7 +1445,7 @@ public class Anasin {
                                     } else if (compararPalavra(arraylist, ",")) {
                                         declaracaoVariaveis(arraylist, tipo);
                                     } else if (compararPalavra(arraylist, "=")) {
-                                        if (bounds(arraylist)) {
+                                        if (limites(arraylist)) {
                                             vetor(arraylist, lexema);
                                         } else {
                                             System.out.println(RED + "ESPERAVA-SE NEW OU { APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -1371,14 +1464,14 @@ public class Anasin {
                                 }
                             }//aqui em baixo tem experimento 
                             else if (compararPalavra(arraylist, "[")) {
-                                if (bounds(arraylist)) {
+                                if (limites(arraylist)) {
                                     if (fechaParentesesRetos(arraylist)) {
-                                        if (bounds(arraylist)) {
+                                        if (limites(arraylist)) {
                                             if (ID(arraylist)) {
-                                                if (bounds(arraylist)) {
+                                                if (limites(arraylist)) {
                                                     if (compararPalavra(arraylist, ";")) {
                                                         ////System.out.println(GREEN + "SUCESSO, MATRIZ DECLARADA" + RESET);
-                                                        if (!bounds(arraylist)) {
+                                                        if (!limites(arraylist)) {
                                                             System.out.println(RED + "ESPERAVA-SE }  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
                                                             numeroErros++;
                                                             i++;
@@ -1386,7 +1479,7 @@ public class Anasin {
                                                     } else if (compararPalavra(arraylist, ",")) {
                                                         declaracaoVariaveis(arraylist, tipo);
                                                     } else if (compararPalavra(arraylist, "=")) {
-                                                        if (bounds(arraylist)) {
+                                                        if (limites(arraylist)) {
                                                             matriz(arraylist, lexema);
                                                         } else {
                                                             System.out.println(RED + "ESPERAVA-SE NEW OU { APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -1462,13 +1555,13 @@ public class Anasin {
         } else if (compararPalavra(arraylist, "int") || compararPalavra(arraylist, "float") || compararPalavra(arraylist, "double")
                 || compararPalavra(arraylist, "String") || compararPalavra(arraylist, "boolean") || compararPalavra(arraylist, "long")
                 || compararPalavra(arraylist, "short") || compararPalavra(arraylist, "byte")) {
-            if (bounds(arraylist)) {
+            if (limites(arraylist)) {
                 if (ID(arraylist)) {
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         if (compararPalavra(arraylist, ",")) {
                             parametro(arraylist);
                         } else if (compararPalavra(arraylist, ")")) {
-                            if (bounds(arraylist)) {
+                            if (limites(arraylist)) {
                                 if (compararPalavra(arraylist, "{")) {
                                     ////System.out.println(GREEN + "SUCESSO, ENTRANDO NO CORPO DO CONSTRUTOR" + RESET);
                                     corpoFuncao(arraylist);
@@ -1495,10 +1588,10 @@ public class Anasin {
                 i++;
             }
         } else if (compararPalavra(arraylist, ")")) {
-            if (bounds(arraylist)) {
+            if (limites(arraylist)) {
                 if (compararPalavra(arraylist, "{")) {
                     ////System.out.println(GREEN + "SUCESSO, ENTRANDO NO CORPO DO CONSTRUTOR" + RESET);
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         corpoFuncao(arraylist);
                     } else {
                         System.out.println(RED + "ESPERAVA-SE }  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
@@ -1524,17 +1617,17 @@ public class Anasin {
         } else if (compararPalavra(arraylist, "int") || compararPalavra(arraylist, "float") || compararPalavra(arraylist, "double")
                 || compararPalavra(arraylist, "String") || compararPalavra(arraylist, "boolean") || compararPalavra(arraylist, "long")
                 || compararPalavra(arraylist, "short") || compararPalavra(arraylist, "byte")) {
-            if (bounds(arraylist)) {
+            if (limites(arraylist)) {
                 if (ID(arraylist)) {
-                    sintax = new Sintax("TOK_ID", arraylist.get(i - 1).lexema, "-", arraylist.get(i - 2).lexema, arraylist.get(i - 2).lexema, -1);
-                    if (bounds(arraylist)) {
+                    sintax = new Sintaxe("TOK_ID", arraylist.get(i - 1).lexema, "-", arraylist.get(i - 2).lexema, arraylist.get(i - 2).lexema, -1);
+                    if (limites(arraylist)) {
                         if (compararPalavra(arraylist, ",")) {
                             tabelaAuxiliar.add(sintax);
                             parametro(arraylist);
                         } else if (compararPalavra(arraylist, ")")) {
                             tabelaAuxiliar.add(sintax);
-                            sintax = new Sintax("TOK_FECHA_PARENTESES", ")", "-", "-", "-", 0);
-                            if (bounds(arraylist)) {
+                            sintax = new Sintaxe("TOK_FECHA_PARENTESES", ")", "-", "-", "-", 0);
+                            if (limites(arraylist)) {
                                 if (compararPalavra(arraylist, "{")) {
                                     controlaEscopo++;
                                     tabelaAuxiliar.add(sintax);
@@ -1566,12 +1659,12 @@ public class Anasin {
                 i++;
             }
         } else if (compararPalavra(arraylist, ")")) {
-            sintax = new Sintax("TOK_FECHA_PARENTESES", ")", "-", "-", "-", 0);
+            sintax = new Sintaxe("TOK_FECHA_PARENTESES", ")", "-", "-", "-", 0);
             tabelaAuxiliar.add(sintax);
-            if (bounds(arraylist)) {
+            if (limites(arraylist)) {
                 if (compararPalavra(arraylist, "{")) {
                     ////System.out.println(GREEN + "SUCESSO, ENTRANDO NO CORPO DA FUNÇÃO" + RESET);
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         adicionarNaTabelaSintatica();
                         controlaEscopo++;
                         corpoFuncao(arraylist);
@@ -1598,20 +1691,20 @@ public class Anasin {
 
     //tenho de aprimorar bem o escopo quando entra numa função, sai e depois volta novamente numa função
     public static void operacoesSemanticas(ArrayList<Token> arraylist, String tipoDeDados) {
-        Sintax sintaxes = new Sintax();
+        Sintaxe sintaxes = new Sintaxe();
         String tipoD = "";
-        for (Sintax sintax : tabelaSintatica) {
+        for (Sintaxe sintax : tabelaSintatica) {
             if (sintax.lexema.equals(tipoDados)) {
                 sintaxes = sintax;
                 tipoD = sintaxes.tipo;
                 break;
             }
         }
-        if (bounds(arraylist)) {
+        if (limites(arraylist)) {
             if (ID(arraylist)) {
-                for (Sintax sintax : tabelaSintatica) {
+                for (Sintaxe sintax : tabelaSintatica) {
                     if (sintax.lexema.equals(tipoDados)) {
-                        for (Sintax teste : tabelaSintatica) {
+                        for (Sintaxe teste : tabelaSintatica) {
                             if (teste.lexema.equals(arraylist.get(i - 1).lexema)) {
                                 op = op.concat(teste.valorDeAtribuicao);
                                 break;
@@ -1620,10 +1713,10 @@ public class Anasin {
                     }
                 }
                 if (verificarExistencia(arraylist.get(i - 1).lexema)) {
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         System.out.println("lexema: " + arraylist.get(i).lexema);
                         if (compararPalavra(arraylist, "/") || compararPalavra(arraylist, "*") || compararPalavra(arraylist, "-") || compararPalavra(arraylist, "+") || compararPalavra(arraylist, "%")) {
-                            if (bounds(arraylist)) {
+                            if (limites(arraylist)) {
                                 op = op.concat(arraylist.get(i - 1).lexema);
                                 operacoesSemanticas(arraylist, tipoDeDados);
                             } else {
@@ -1632,7 +1725,7 @@ public class Anasin {
                                 op = "";
                             }
                         } else if (pontoEvirgula(arraylist)) {
-                            for (Sintax sintax : tabelaSintatica) {
+                            for (Sintaxe sintax : tabelaSintatica) {
                                 if (sintax.lexema.equals(tipoDados)) {
                                     sintax.lexema = operacoesSemanticasAux();
                                 }
@@ -1659,9 +1752,9 @@ public class Anasin {
                 }*/
                 op = arraylist.get(i - 1).lexema;
                 if (verificarExistencia(arraylist.get(i - 1).lexema)) {
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         if (compararPalavra(arraylist, "/") || compararPalavra(arraylist, "*") || compararPalavra(arraylist, "-") || compararPalavra(arraylist, "+") || compararPalavra(arraylist, "%")) {
-                            if (bounds(arraylist)) {
+                            if (limites(arraylist)) {
                                 op = arraylist.get(i - 1).lexema;
                                 operacoesSemanticas(arraylist, tipoDeDados);
                             } else {
@@ -1670,7 +1763,7 @@ public class Anasin {
                                 op = "";
                             }
                         } else if (pontoEvirgula(arraylist)) {
-                            for (Sintax sintax : tabelaSintatica) {
+                            for (Sintaxe sintax : tabelaSintatica) {
                                 if (sintax.lexema.equals(tipoDados)) {
                                     sintax.lexema = operacoesSemanticasAux();
                                 }
@@ -1735,9 +1828,9 @@ public class Anasin {
                 For(arraylist);
             } else if (compararPalavra(arraylist, "while")) {
                 If = false;
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (compararPalavra(arraylist, "(")) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             condicao(arraylist);
                         } else {
                             System.out.println(RED + "ESPERAVA-SE POR UMA EXPRESSÃO LÓGICA  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -1752,9 +1845,9 @@ public class Anasin {
                 }
             } else if (compararPalavra(arraylist, "if")) {
                 If = true;
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (compararPalavra(arraylist, "(")) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             condicao(arraylist);
                         } else {
                             System.out.println(RED + "ESPERAVA-SE POR UMA EXPRESSÃO LÓGICA  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -1768,9 +1861,9 @@ public class Anasin {
                     i++;
                 }
             } else if (compararPalavra(arraylist, "do")) {
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (compararPalavra(arraylist, "{")) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             corpoDoWhile(arraylist);
                         } else {
                             System.out.println(RED + "ESPERAVA-SE { APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -1787,7 +1880,7 @@ public class Anasin {
                 String tipo = "";
                 tipoDados = arraylist.get(i).lexema;
                 if (verificarExistencia(arraylist.get(i).lexema)) {
-                    for (Sintax sintax : tabelaSintatica) {
+                    for (Sintaxe sintax : tabelaSintatica) {
                         if (sintax.lexema.equals(arraylist.get(i).lexema)) {
                             System.out.println("tipo de dados: " + sintax.tipo);
                             tipo = sintax.tipo;
@@ -1796,7 +1889,7 @@ public class Anasin {
                     }
                     lexemaSintatico = i + 2;
                     i = i + 2;
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         operacoesSemanticas(arraylist, tipo);
                     } else {
                         System.out.println(RED + "ESPERAVA-SE ALGUM VALOR PARA O PARÂMETRO DA FUNÇAÕ OU )  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
@@ -1811,10 +1904,10 @@ public class Anasin {
                 if (verificarExistencia(arraylist.get(i).lexema)) {
                     lexemaSintatico = i + 2;
                     i = i + 2;
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         tabelaAuxiliar.clear();
-                        tabelaAuxiliar.add(new Sintax("TOK_IDENTIFICADOR", arraylist.get(i - 2).lexema, "-", "-", "-", 0));
-                        tabelaAuxiliar.add(new Sintax("TOK_ABRE_PARENTESES", arraylist.get(i - 1).lexema, "-", "-", "-", 0));
+                        tabelaAuxiliar.add(new Sintaxe("TOK_IDENTIFICADOR", arraylist.get(i - 2).lexema, "-", "-", "-", 0));
+                        tabelaAuxiliar.add(new Sintaxe("TOK_ABRE_PARENTESES", arraylist.get(i - 1).lexema, "-", "-", "-", 0));
                         chamadaFuncao(arraylist, arraylist.get(i - 2).lexema);
                     } else {
                         System.out.println(RED + "ESPERAVA-SE ALGUM VALOR PARA O PARÂMETRO DA FUNÇAÕ OU )  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
@@ -1828,7 +1921,7 @@ public class Anasin {
             } else if ((arraylist.get(i).tipo.equals("IDENTIFICADOR")) && (arraylist.get(i + 1).lexema.equals("["))) {
                 if (verificarExistencia(arraylist.get(i).lexema)) {
                     i = i + 2;
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
 
                     } else {
                         System.out.println(RED + "ESPERAVA-SE ALGUM VETOR OU MATRIZ APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
@@ -1841,7 +1934,7 @@ public class Anasin {
                 }
             } else if (fechaChaveta(arraylist)) {
                 i--;
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     corpoClass(arraylist);
                 } else {
                     System.out.println(RED + "ESPERAVA-SE } DA CLASSE APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
@@ -1865,7 +1958,7 @@ public class Anasin {
             i = i;
         }
 
-        for (Sintax sintax : tabelaSintatica) {
+        for (Sintaxe sintax : tabelaSintatica) {
             if (procura && sintax.lexema.equals(nomeFuncao)) {
                 encontrou = true;
                 j++;
@@ -1912,7 +2005,7 @@ public class Anasin {
             String tipo = arraylist.get(i - 1).tipo;
             contChamadaFuncao++;
             if (arraylist.get(i - 1).tipo.equals("IDENTIFICADOR")) {
-                for (Sintax sintax : tabelaSintatica) {
+                for (Sintaxe sintax : tabelaSintatica) {
                     if (sintax.lexema.equals(arraylist.get(i - 1).lexema)) {
                         tabelaAuxiliar.add(sintax);
                         break;
@@ -1920,31 +2013,31 @@ public class Anasin {
                 }
             } else if (tipo.equals("NÚMERO INTEIRO")) {
                 tipo = "int";
-                tabelaAuxiliar.add(new Sintax("TOK_".concat(tipo.toUpperCase()), arraylist.get(i - 1).lexema, "-", tipo, "-", -1));
+                tabelaAuxiliar.add(new Sintaxe("TOK_".concat(tipo.toUpperCase()), arraylist.get(i - 1).lexema, "-", tipo, "-", -1));
             } else if (tipo.equals("NÚMERO REAL")) {
                 tipo = "double";
-                tabelaAuxiliar.add(new Sintax("TOK_".concat(tipo.toUpperCase()), arraylist.get(i - 1).lexema, "-", tipo, "-", -1));
+                tabelaAuxiliar.add(new Sintaxe("TOK_".concat(tipo.toUpperCase()), arraylist.get(i - 1).lexema, "-", tipo, "-", -1));
             } else if (tipo.equals("STRING")) {
                 tipo = "String";
-                tabelaAuxiliar.add(new Sintax("TOK_".concat(tipo.toUpperCase()), arraylist.get(i - 1).lexema, "-", tipo, "-", -1));
+                tabelaAuxiliar.add(new Sintaxe("TOK_".concat(tipo.toUpperCase()), arraylist.get(i - 1).lexema, "-", tipo, "-", -1));
             } else if (tipo.equals("CHAR")) {
                 tipo = "char";
-                tabelaAuxiliar.add(new Sintax("TOK_".concat(tipo.toUpperCase()), arraylist.get(i - 1).lexema, "-", tipo, "-", -1));
+                tabelaAuxiliar.add(new Sintaxe("TOK_".concat(tipo.toUpperCase()), arraylist.get(i - 1).lexema, "-", tipo, "-", -1));
             }
 
             //validarParametros(arraylist, arraylist.get(i-1).tipo);
-            if (bounds(arraylist)) {
+            if (limites(arraylist)) {
                 if (compararPalavra(arraylist, ",")) {
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         chamadaFuncao(arraylist, nomeFuncao);
                     } else {
                         System.out.println(RED + "ESPERAVA-SE UM VALOR PRO PARÂMETRO DA FUNÇÃO APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
                         numeroErros++;
                     }
                 } else if (compararPalavra(arraylist, ")")) {
-                    tabelaAuxiliar.add(new Sintax("TOK_FECHA_PARENTESES", ")", "-", "-", "-", -1));
+                    tabelaAuxiliar.add(new Sintaxe("TOK_FECHA_PARENTESES", ")", "-", "-", "-", -1));
                     contChamadaFuncao++;
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         if (compararPalavra(arraylist, ";")) {
                             validarParametros(arraylist, nomeFuncao);
                             //System.out.println(GREEN+"SUCESSO, CHAMADA DE FUNÇÃO. quantos mambos: "+contChamadaFuncao+RESET);
@@ -1967,7 +2060,7 @@ public class Anasin {
                 numeroErros++;
             }
         } else if (compararPalavra(arraylist, ")")) {
-            if (bounds(arraylist)) {
+            if (limites(arraylist)) {
                 if (compararPalavra(arraylist, ";")) {
                     validarParametros(arraylist, nomeFuncao);
                     //System.out.println(GREEN+"SUCESSO, CHAMADA DE FUNÇÃO."+RESET);
@@ -1999,9 +2092,9 @@ public class Anasin {
             } else if (compararPalavra(arraylist, "for")) {
                 For(arraylist);
             } else if (compararPalavra(arraylist, "while")) {
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (compararPalavra(arraylist, "(")) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             condicao(arraylist);
                         } else {
                             System.out.println(RED + "ESPERAVA-SE POR UMA EXPRESSÃO LÓGICA  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -2013,9 +2106,9 @@ public class Anasin {
                     numeroErros++;
                 }
             } else if (compararPalavra(arraylist, "if")) {
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (compararPalavra(arraylist, "(")) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             condicao(arraylist);
                         } else {
                             System.out.println(RED + "ESPERAVA-SE POR UMA EXPRESSÃO LÓGICA  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -2029,7 +2122,7 @@ public class Anasin {
             } else if ((arraylist.get(i).tipo.equals("IDENTIFICADOR")) && (arraylist.get(i + 1).lexema.equals("("))) {
                 i = i + 2;
                 if (verificarExistencia(arraylist.get(i).lexema)) {
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         chamadaFuncao(arraylist, arraylist.get(i - 2).lexema);
                     } else {
                         System.out.println(RED + "ESPERAVA-SE ALGUM VALOR PARA O PARÂMETRO DA FUNÇÃO OU )  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
@@ -2040,10 +2133,10 @@ public class Anasin {
                     numeroErros++;
                 }
             } else if (fechaChaveta(arraylist)) {
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     //inicialmente aqui está a classe mas não não se sabe o q virá. 
                     controlaEscopo--;
-                    redirecione(arraylist);
+                    redirecionaEscopo(arraylist);
                 } else {
                     System.out.println(RED + "ESPERAVA-SE }  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
                     numeroErros++;
@@ -2068,9 +2161,9 @@ public class Anasin {
             } else if (compararPalavra(arraylist, "for")) {
                 For(arraylist);
             } else if (compararPalavra(arraylist, "while")) {
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (compararPalavra(arraylist, "(")) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             condicao(arraylist);
                         } else {
                             System.out.println(RED + "ESPERAVA-SE POR UMA EXPRESSÃO LÓGICA  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -2082,9 +2175,9 @@ public class Anasin {
                     numeroErros++;
                 }
             } else if (compararPalavra(arraylist, "if")) {
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (compararPalavra(arraylist, "(")) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             condicao(arraylist);
                         } else {
                             System.out.println(RED + "ESPERAVA-SE POR UMA EXPRESSÃO LÓGICA  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -2097,16 +2190,16 @@ public class Anasin {
                 }
             } else if ((arraylist.get(i).tipo.equals("IDENTIFICADOR")) && (arraylist.get(i + 1).lexema.equals("("))) {
                 i = i + 2;
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     chamadaFuncao(arraylist, arraylist.get(i - 2).lexema);
                 } else {
                     System.out.println(RED + "ESPERAVA-SE ALGUM VALOR PARA O PARÂMETRO DA FUNÇAÕ OU )  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
                     numeroErros++;
                 }
             } else if (fechaChaveta(arraylist)) {
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     controlaEscopo--;
-                    redirecione(arraylist);
+                    redirecionaEscopo(arraylist);
                 } else {
                     System.out.println(RED + "ESPERAVA-SE }  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
                     numeroErros++;
@@ -2132,9 +2225,9 @@ public class Anasin {
                 For(arraylist);
             } else if (compararPalavra(arraylist, "while")) {
                 If = false;
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (compararPalavra(arraylist, "(")) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             condicao(arraylist);
                         } else {
                             System.out.println(RED + "ESPERAVA-SE POR UMA EXPRESSÃO LÓGICA  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -2146,9 +2239,9 @@ public class Anasin {
                     numeroErros++;
                 }
             } else if (compararPalavra(arraylist, "if")) {
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (compararPalavra(arraylist, "(")) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             condicao(arraylist);
                         } else {
                             System.out.println(RED + "ESPERAVA-SE POR UMA EXPRESSÃO LÓGICA  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -2161,7 +2254,7 @@ public class Anasin {
                 }
             } else if ((arraylist.get(i).tipo.equals("IDENTIFICADOR")) && (arraylist.get(i + 1).lexema.equals("("))) {
                 i = i + 2;
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     chamadaFuncao(arraylist, arraylist.get(i - 2).lexema);
                 } else {
                     System.out.println(RED + "ESPERAVA-SE ALGUM VALOR PARA O PARÂMETRO DA FUNÇAÕ OU )  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
@@ -2169,14 +2262,14 @@ public class Anasin {
                 }
             } else if (fechaChaveta(arraylist)) {
                 If = false;
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (compararPalavra(arraylist, "else")) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             if (compararPalavra(arraylist, "if")) {
                                 If = true;
-                                if (bounds(arraylist)) {
+                                if (limites(arraylist)) {
                                     if (compararPalavra(arraylist, "(")) {
-                                        if (bounds(arraylist)) {
+                                        if (limites(arraylist)) {
                                             condicao(arraylist);
                                         } else {
                                             System.out.println(RED + "ESPERAVA-SE POR UMA EXPRESSÃO LÓGICA  APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -2188,7 +2281,7 @@ public class Anasin {
                                     numeroErros++;
                                 }
                             } else {
-                                if (bounds(arraylist)) {
+                                if (limites(arraylist)) {
                                     condicao(arraylist);
                                 } else {
                                     System.out.println(RED + "ESPERAVA-SE ( APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
@@ -2201,7 +2294,7 @@ public class Anasin {
                         }
                     } else {
                         controlaEscopo--;
-                        redirecione(arraylist);
+                        redirecionaEscopo(arraylist);
                     }
                 } else {
                     System.out.println(RED + "ESPERAVA-SE } OU ALGUM OUTRO TOKEN APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + (arraylist.get(i - 1).linha + 1) + RESET);
@@ -2229,19 +2322,19 @@ public class Anasin {
             i = i;
         } else if (ID(arraylist)) {
             lexemaSintatico = i - 1;
-            sintax = new Sintax("TOK_ID", arraylist.get(lexemaSintatico).lexema, "-", lexema, "-", 0);
-            if (bounds(arraylist)) {
+            sintax = new Sintaxe("TOK_ID", arraylist.get(lexemaSintatico).lexema, "-", lexema, "-", 0);
+            if (limites(arraylist)) {
                 if (compararPalavra(arraylist, "=")) {
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         if (compararTipo(arraylist, tipo)) {
-                            sintax = new Sintax("TOK_ID", arraylist.get(lexemaSintatico).lexema, arraylist.get(i - 1).lexema, lexema, "-", 0);
-                            if (bounds(arraylist)) {
+                            sintax = new Sintaxe("TOK_ID", arraylist.get(lexemaSintatico).lexema, arraylist.get(i - 1).lexema, lexema, "-", 0);
+                            if (limites(arraylist)) {
                                 if (pontoEvirgula(arraylist)) {
                                     tabelaAuxiliar.add(sintax);
                                     adicionarNaTabelaSintatica();
                                     ////System.out.println(GREEN + "SUCESSO, VARIÁVEL BEM DECLARADA" + RESET);
                                 } else if (compararPalavra(arraylist, ",")) {
-                                    if (bounds(arraylist)) {
+                                    if (limites(arraylist)) {
                                         tabelaAuxiliar.add(sintax);
                                         declaracaoVariaveis(arraylist, tipo);
                                     } else {
@@ -2272,7 +2365,7 @@ public class Anasin {
                     ////System.out.println(GREEN + "SUCESSO, VARIÁVEL BEM DECLARADA" + RESET);
                 } else if (compararPalavra(arraylist, ",")) {
                     tabelaAuxiliar.add(sintax);
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         declaracaoVariaveis(arraylist, tipo);
                     } else {
                         System.out.println(RED + "ESPERAVA-SE UM IDENTIFICADOR APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
@@ -2310,11 +2403,11 @@ public class Anasin {
 
             if (compararTipo(arraylist, "COMENTÁRIO") || compararTipo(arraylist, "COMENTÁRIO SIMPLES")) {
                 i = i;
-            } else if (bounds(arraylist)) {
+            } else if (limites(arraylist)) {
                 if (compararPalavra(arraylist, lexema)) {
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         if (abreParentesesRetos(arraylist)) {
-                            if (bounds(arraylist)) {
+                            if (limites(arraylist)) {
                                 if (compararTipo(arraylist, "NÚMERO INTEIRO")) {
 
                                 } else {
@@ -2352,19 +2445,19 @@ public class Anasin {
             } else if (tipo.equals("NÚMERO REAL")) {
                 lexema = "double";
             }
-            if (bounds(arraylist)) {
+            if (limites(arraylist)) {
                 if (compararTipo(arraylist, tipo)) {
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         if (compararPalavra(arraylist, ",")) {
                             loop = true;
-                            if (bounds(arraylist)) {
+                            if (limites(arraylist)) {
                                 vetor(arraylist, tipo);
                             } else {
                                 System.out.println(RED + "ESPERAVA-SE UM DADO DO TIPO " + lexema + " APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
                                 numeroErros++;
                             }
                         } else if (compararPalavra(arraylist, "}")) {
-                            if (bounds(arraylist)) {
+                            if (limites(arraylist)) {
                                 if (compararPalavra(arraylist, ";")) {
                                     ////System.out.println(GREEN + "SUCESSO, VETOR BEM DECLARADO" + RESET);
                                 } else {
@@ -2402,13 +2495,13 @@ public class Anasin {
             } else if (tipo.equals("NÚMERO REAL")) {
                 lexema = "double";
             }
-            if (bounds(arraylist)) {
+            if (limites(arraylist)) {
                 if ((compararTipo(arraylist, tipo))) {
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         if (compararPalavra(arraylist, ",")) {
                             vetor(arraylist, tipo);
                         } else if (compararPalavra(arraylist, "}")) {
-                            if (bounds(arraylist)) {
+                            if (limites(arraylist)) {
                                 if (pontoEvirgula(arraylist)) {
                                     ////System.out.println(GREEN + "SUCESSO, VETOR BEM DECLARADO" + RESET);
                                     loop = false;
@@ -2447,7 +2540,7 @@ public class Anasin {
     }
 
     public static void matriz(ArrayList<Token> arraylist, String tipo) {
-        if (bounds(arraylist)) {
+        if (limites(arraylist)) {
             String lexema = "";
             if (compararPalavra(arraylist, "new")) {
                 if (tipo.equals("NÚMERO INTEIRO")) {
@@ -2460,11 +2553,11 @@ public class Anasin {
 
                 if (compararTipo(arraylist, "COMENTÁRIO") || compararTipo(arraylist, "COMENTÁRIO SIMPLES")) {
                     i = i;
-                } else if (bounds(arraylist)) {
+                } else if (limites(arraylist)) {
                     if (compararPalavra(arraylist, lexema)) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             if (abreParentesesRetos(arraylist)) {
-                                if (bounds(arraylist)) {
+                                if (limites(arraylist)) {
                                     if (compararTipo(arraylist, "NÚMERO INTEIRO")) {
 
                                     } else {
@@ -2502,19 +2595,19 @@ public class Anasin {
                 } else if (tipo.equals("NÚMERO REAL")) {
                     lexema = "double";
                 }
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if (compararTipo(arraylist, tipo)) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             if (compararPalavra(arraylist, ",")) {
                                 loop = true;
-                                if (bounds(arraylist)) {
+                                if (limites(arraylist)) {
                                     vetor(arraylist, tipo);
                                 } else {
                                     System.out.println(RED + "ESPERAVA-SE UM DADO DO TIPO " + lexema + " APÓS A EXPRESSÃO " + arraylist.get(i - 1).lexema + " NA LINHA " + arraylist.get(i - 1).linha + RESET);
                                     numeroErros++;
                                 }
                             } else if (compararPalavra(arraylist, "}")) {
-                                if (bounds(arraylist)) {
+                                if (limites(arraylist)) {
                                     if (compararPalavra(arraylist, ";")) {
                                         ////System.out.println(GREEN + "SUCESSO, VETOR BEM DECLARADO" + RESET);
                                     } else {
@@ -2552,13 +2645,13 @@ public class Anasin {
                 } else if (tipo.equals("NÚMERO REAL")) {
                     lexema = "double";
                 }
-                if (bounds(arraylist)) {
+                if (limites(arraylist)) {
                     if ((compararTipo(arraylist, tipo))) {
-                        if (bounds(arraylist)) {
+                        if (limites(arraylist)) {
                             if (compararPalavra(arraylist, ",")) {
                                 vetor(arraylist, tipo);
                             } else if (compararPalavra(arraylist, "}")) {
-                                if (bounds(arraylist)) {
+                                if (limites(arraylist)) {
                                     if (pontoEvirgula(arraylist)) {
                                         ////System.out.println(GREEN + "SUCESSO, VETOR BEM DECLARADO" + RESET);
                                         loop = false;
@@ -2597,107 +2690,6 @@ public class Anasin {
         }
     }
 
-    public static boolean abreParenteses(ArrayList<Token> arraylist) {
-        if (compararPalavra(arraylist, "(")) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public static boolean fechaParenteses(ArrayList<Token> arraylist) {
-        if (compararPalavra(arraylist, ")")) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public static boolean abreParentesesRetos(ArrayList<Token> arraylist) {
-        if (compararPalavra(arraylist, "[")) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public static boolean fechaParentesesRetos(ArrayList<Token> arraylist) {
-        if (compararPalavra(arraylist, "]")) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public static boolean abreChaveta(ArrayList<Token> arraylist) {
-        if (compararPalavra(arraylist, "{")) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public static boolean fechaChaveta(ArrayList<Token> arraylist) {
-        if (compararPalavra(arraylist, "}")) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public static boolean bounds(ArrayList<Token> arraylist) {
-        if (i < arraylist.size()) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public static boolean ID(ArrayList<Token> arraylist) {
-        if (arraylist.get(i).tipo.equals("IDENTIFICADOR")) {
-            i++;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public static boolean ponto(ArrayList<Token> arraylist) {
-        if (arraylist.get(i).lexema.equals(".")) {
-            i++;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public static boolean pontoEvirgula(ArrayList<Token> arraylist) {
-        if (arraylist.get(i).lexema.equals(";")) {
-            i++;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public static boolean compararPalavra(ArrayList<Token> arraylist, String palavra) {
-        if (arraylist.get(i).lexema.equals(palavra)) {
-            i++;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public static boolean compararTipo(ArrayList<Token> arraylist, String palavra) {
-        if (arraylist.get(i).tipo.equals(palavra)) {
-            i++;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     //ainda falta acrescer algo
     public static void condicao(ArrayList<Token> arraylist) {
         if (compararTipo(arraylist, "COMENTÁRIO") || compararTipo(arraylist, "COMENTÁRIO SIMPLES")) {
@@ -2711,11 +2703,11 @@ public class Anasin {
                 //aqui é depois de aparecer um id
                 if (arraylist.get(i).lexema.equals(")")) {
                     i++;
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         if (abreChaveta(arraylist)) {
                             controlaEscopo++;
-                            if (bounds(arraylist)) {
-                                ////System.out.println(GREEN + "ENTRANDO NO CORPO DO WHILE, hermano." + RESET);
+                            if (limites(arraylist)) {
+                                ////System.out.println(GREEN + "ENTRANDO NO CORPO DO WHILE" + RESET);
                                 if (If) {
                                     caminhos.add("if");
                                     corpoIf(arraylist);
@@ -2749,11 +2741,11 @@ public class Anasin {
                                     condicao(arraylist);
                                 } else if (arraylist.get(i).lexema.equals(")")) {
                                     i++;
-                                    if (bounds(arraylist)) {
+                                    if (limites(arraylist)) {
                                         if (abreChaveta(arraylist)) {
                                             controlaEscopo++;
-                                            if (bounds(arraylist)) {
-                                                ////System.out.println(GREEN + "ENTRANDO NO CORPO DO WHILE, hermano." + RESET);
+                                            if (limites(arraylist)) {
+                                                ////System.out.println(GREEN + "ENTRANDO NO CORPO DO WHILE" + RESET);
                                                 if (If) {
                                                     caminhos.add("if");
                                                     corpoIf(arraylist);
@@ -2789,11 +2781,11 @@ public class Anasin {
                                     condicao(arraylist);
                                 } else if (arraylist.get(i).lexema.equals(")")) {
                                     i++;
-                                    if (bounds(arraylist)) {
+                                    if (limites(arraylist)) {
                                         if (abreChaveta(arraylist)) {
                                             controlaEscopo++;
-                                            if (bounds(arraylist)) {
-                                                ////System.out.println(GREEN + "ENTRANDO NO CORPO DO WHILE, hermano." + RESET);
+                                            if (limites(arraylist)) {
+                                                ////System.out.println(GREEN + "ENTRANDO NO CORPO DO WHILE" + RESET);
                                                 if (If) {
                                                     caminhos.add("if");
                                                     corpoIf(arraylist);
@@ -2848,11 +2840,11 @@ public class Anasin {
                 //aqui é depois de aparecer um id
                 if (arraylist.get(i).lexema.equals(")")) {
                     i++;
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         if (abreChaveta(arraylist)) {
                             controlaEscopo++;
-                            if (bounds(arraylist)) {
-                                ////System.out.println(GREEN + "ENTRANDO NO CORPO DO WHILE, hermano." + RESET);
+                            if (limites(arraylist)) {
+                                ////System.out.println(GREEN + "ENTRANDO NO CORPO DO WHILE" + RESET);
                                 if (If) {
                                     caminhos.add("if");
                                     corpoIf(arraylist);
@@ -2886,11 +2878,11 @@ public class Anasin {
                                     condicao(arraylist);
                                 } else if (arraylist.get(i).lexema.equals(")")) {
                                     i++;
-                                    if (bounds(arraylist)) {
+                                    if (limites(arraylist)) {
                                         if (abreChaveta(arraylist)) {
                                             controlaEscopo++;
-                                            if (bounds(arraylist)) {
-                                                ////System.out.println(GREEN + "ENTRANDO NO CORPO DO WHILE, hermano." + RESET);
+                                            if (limites(arraylist)) {
+                                                ////System.out.println(GREEN + "ENTRANDO NO CORPO DO WHILE" + RESET);
                                                 if (If) {
                                                     caminhos.add("if");
                                                     corpoIf(arraylist);
@@ -2926,11 +2918,11 @@ public class Anasin {
                                     condicao(arraylist);
                                 } else if (arraylist.get(i).lexema.equals(")")) {
                                     i++;
-                                    if (bounds(arraylist)) {
+                                    if (limites(arraylist)) {
                                         if (abreChaveta(arraylist)) {
                                             controlaEscopo++;
-                                            if (bounds(arraylist)) {
-                                                ////System.out.println(GREEN + "ENTRANDO NO CORPO DO WHILE, hermano." + RESET);
+                                            if (limites(arraylist)) {
+                                                ////System.out.println(GREEN + "ENTRANDO NO CORPO DO WHILE" + RESET);
                                                 if (If) {
                                                     caminhos.add("if");
                                                     corpoIf(arraylist);
@@ -2997,7 +2989,7 @@ public class Anasin {
             if (i < arraylist.size()) {
                 //aqui é depois de aparecer um id
                 if (arraylist.get(i).lexema.equals(";")) {
-                    ////System.out.println(GREEN + "comparação limpa. Segunda parte do for bateu, hermano." + RESET);
+                    ////System.out.println(GREEN + "Segundo argumento for correcto" + RESET);
                     i++;
                 } else if (arraylist.get(i).lexema.equals(">") || arraylist.get(i).lexema.equals("<") || arraylist.get(i).lexema.equals(">=") || arraylist.get(i).lexema.equals("<=") || arraylist.get(i).lexema.equals("==") || arraylist.get(i).lexema.equals("!=")) {
                     i++;
@@ -3009,7 +3001,7 @@ public class Anasin {
                                 if (arraylist.get(i).lexema.equals("||") || arraylist.get(i).lexema.equals("&&")) {
                                     condicaoFor(arraylist);
                                 } else if (arraylist.get(i).lexema.equals(";")) {
-                                    ////System.out.println(GREEN + "comparação limpa. Segunda parte do for bateu, hermano." + RESET);
+                                    ////System.out.println(GREEN + "Segundo argumento for correcto" + RESET);
                                     i++;
                                 }
                             } else {
@@ -3023,7 +3015,7 @@ public class Anasin {
                                 if (arraylist.get(i).lexema.equals("||") || arraylist.get(i).lexema.equals("&&")) {
                                     condicao(arraylist);
                                 } else if (arraylist.get(i).lexema.equals(";")) {
-                                    ////System.out.println(GREEN + "comparação limpa, hermano. Segunda parte feita com sucesso" + RESET);
+                                    ////System.out.println(GREEN + "Segundo argumento for correcto" + RESET);
                                     i++;
                                 }
                             } else {
@@ -3051,7 +3043,7 @@ public class Anasin {
             if (i < arraylist.size()) {
                 //aqui é depois de aparecer um id
                 if (arraylist.get(i).lexema.equals(";")) {
-                    ////System.out.println(GREEN + "comparação limpa. Segunda parte do for bateu, hermano." + RESET);
+                    ////System.out.println(GREEN + "Segundo argumento for correcto" + RESET);
                     i++;
                 } else if (arraylist.get(i).lexema.equals(">") || arraylist.get(i).lexema.equals("<") || arraylist.get(i).lexema.equals(">=") || arraylist.get(i).lexema.equals("<=") || arraylist.get(i).lexema.equals("==") || arraylist.get(i).lexema.equals("!=")) {
                     i++;
@@ -3063,7 +3055,7 @@ public class Anasin {
                                 if (arraylist.get(i).lexema.equals("||") || arraylist.get(i).lexema.equals("&&")) {
                                     condicaoFor(arraylist);
                                 } else if (arraylist.get(i).lexema.equals(";")) {
-                                    ////System.out.println(GREEN + "comparação limpa. Segunda parte do for bateu, hermano." + RESET);
+                                    ////System.out.println(GREEN + "Segundo argumento for correcto" + RESET);
                                     i++;
                                 }
                             } else {
@@ -3106,10 +3098,10 @@ public class Anasin {
                             if (arraylist.get(i).lexema.equals(")")) {
                                 i++;
                                 ////System.out.println(GREEN + "FOR terminado com sucesso");
-                                if (bounds(arraylist)) {
+                                if (limites(arraylist)) {
                                     if (abreChaveta(arraylist)) {
                                         controlaEscopo++;
-                                        if (bounds(arraylist)) {
+                                        if (limites(arraylist)) {
                                             caminhos.add("for");
                                             corpoFor(arraylist);
                                         } else {
@@ -3141,10 +3133,10 @@ public class Anasin {
                                     if (arraylist.get(i).lexema.equals(")")) {
                                         i++;
                                         ////System.out.println(GREEN + "FOR terminado com sucesso");
-                                        if (bounds(arraylist)) {
+                                        if (limites(arraylist)) {
                                             if (abreChaveta(arraylist)) {
                                                 controlaEscopo++;
-                                                if (bounds(arraylist)) {
+                                                if (limites(arraylist)) {
                                                     caminhos.add("for");
                                                     corpoFor(arraylist);
                                                 } else {
@@ -3211,10 +3203,10 @@ public class Anasin {
                                     if (arraylist.get(i).lexema.equals(")")) {
                                         i++;
                                         ////System.out.println(GREEN + "For terminado com sucesso");
-                                        if (bounds(arraylist)) {
+                                        if (limites(arraylist)) {
                                             if (abreChaveta(arraylist)) {
                                                 controlaEscopo++;
-                                                if (bounds(arraylist)) {
+                                                if (limites(arraylist)) {
                                                     caminhos.add("for");
                                                     corpoFor(arraylist);
                                                 } else {
@@ -3276,10 +3268,10 @@ public class Anasin {
                 if (arraylist.get(i).lexema.equals(")")) {
                     i++;
                     ////System.out.println(GREEN + "For terminado com sucesso");
-                    if (bounds(arraylist)) {
+                    if (limites(arraylist)) {
                         if (abreChaveta(arraylist)) {
                             controlaEscopo++;
-                            if (bounds(arraylist)) {
+                            if (limites(arraylist)) {
                                 caminhos.add("for");
                                 corpoFor(arraylist);
                             } else {
@@ -3328,7 +3320,6 @@ public class Anasin {
                                             i++;
                                             if (i < arraylist.size()) {
                                                 if (arraylist.get(i).lexema.equals(";")) {
-                                                    ////System.out.println(GREEN + "bateu a primeira parte do for");
                                                     i++;
                                                     condicaoFor(arraylist);
                                                     incrementoFor(arraylist);
@@ -3351,7 +3342,7 @@ public class Anasin {
                                 } else if (arraylist.get(i).tipo.equals("PONTO E VÍRGULA")) {
                                     if (i < arraylist.size()) {
                                         if (arraylist.get(i).lexema.equals(";")) {
-                                            ////System.out.println(GREEN + "bateu a primeira parte do for");
+                                            ////System.out.println(GREEN + "for correcto");
                                             i++;
                                             condicaoFor(arraylist);
                                             incrementoFor(arraylist);
@@ -3368,11 +3359,11 @@ public class Anasin {
                                             if (i < arraylist.size()) {
                                                 if (arraylist.get(i).lexema.equals(")")) {
                                                     i++;
-                                                    ////System.out.println(GREEN + "bateu forich");
-                                                    if (bounds(arraylist)) {
+                                                    ////System.out.println(GREEN + "foreach correcto");
+                                                    if (limites(arraylist)) {
                                                         if (abreChaveta(arraylist)) {
                                                             controlaEscopo++;
-                                                            if (bounds(arraylist)) {
+                                                            if (limites(arraylist)) {
                                                                 caminhos.add("for");
                                                                 corpoFor(arraylist);
                                                             } else {
@@ -3425,7 +3416,7 @@ public class Anasin {
                                         i++;
                                         if (i < arraylist.size()) {
                                             if (arraylist.get(i).lexema.equals(";")) {
-                                                ////System.out.println(GREEN + "bateu a primeira parte do for");
+                                                ////System.out.println(GREEN + "primeiro argumento do for correcto");
                                                 i++;
                                                 condicaoFor(arraylist);
                                                 incrementoFor(arraylist);
@@ -3448,7 +3439,6 @@ public class Anasin {
                             } else if (arraylist.get(i).tipo.equals("PONTO E VÍRGULA")) {
                                 if (i < arraylist.size()) {
                                     if (arraylist.get(i).lexema.equals(";")) {
-                                        ////System.out.println(GREEN + "bateu a primeira parte do for");
                                         i++;
                                         condicaoFor(arraylist);
                                         incrementoFor(arraylist);

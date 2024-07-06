@@ -1,0 +1,17 @@
+using ;
+
+class Program
+{
+    static void Main()
+    {
+        Console.WriteLine("Digite três números para calcular a média:");
+
+        double num1 = LerNumero();
+        double num2 = LerNumero();
+        double num3 = LerNumero();
+
+        double media = CalcularMedia(num1, num2, num3);
+
+        Console.WriteLine("A média dos números é: {media}");
+    }
+}
