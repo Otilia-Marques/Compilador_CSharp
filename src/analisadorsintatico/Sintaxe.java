@@ -26,8 +26,6 @@ public class Sintaxe {
     
     public static void imprimirTabelaSintaxe(ArrayList <Sintaxe> tabelaSintaxe ){
         System.out.println("\n\n_____________________________________________________________________________________________________");
-        System.out.println("                                     TABELA ANALISADOR SINTÁTICA");
-        System.out.println("_____________________________________________________________________________________________________");
         System.out.format("%-25s %15s %15s %15s %15s %8s\n", "TOKEN:", "LEXEMA: ", "TIPO: ", "V.ATRIBUICAO:", "T.ATRIBUIÇÃO:", " ESCOPO:");
         System.out.println("_____________________________________________________________________________________________________");
         for(Sintaxe sintaxes: tabelaSintaxe){
